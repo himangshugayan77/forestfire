@@ -14,6 +14,11 @@ from shapely.geometry import Point, Polygon, LineString
 
 warnings.filterwarnings('ignore')
 
+# Enable full error details at runtime
+st.set_option("client.showErrorDetails", True)
+
+# Then the rest of your app…
+
 # Set page configuration
 st.set_page_config(
     page_title="Assam Forest Fire Temperature Prediction Map",
