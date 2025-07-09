@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 st.set_option("client.showErrorDetails", True)
 
 # Then the rest of your app…
-app = AssamFireMapApp()
+
 # Set page configuration
 st.set_page_config(
     page_title="Assam Forest Fire Temperature Prediction Map",
@@ -265,13 +265,13 @@ if "resolution" not in st.session_state or st.session_state.resolution != resolu
     st.session_state.grid = generate_temperature_grid(resolution)
 
 # 3️⃣  Build the map only when necessary
-if "map_obj" not in st.session_state:
-    st.session_state.map_obj = app.create_interactive_map(
-    app.districts_gdf,
-    st.session_state.grid,
-    show_grid,
-    show_districts
-)
+#if "map_obj" not in st.session_state:
+#    st.session_state.map_obj = app.create_interactive_map(
+#    app.districts_gdf,
+#    st.session_state.grid,
+#    show_grid,
+#   show_districts
+#)
 
 
 # 4️⃣  Display without triggering feedback
@@ -285,7 +285,7 @@ st_folium(
 # Run the application
 if __name__ == "__main__":
     try:
-       
+        app = AssamFireMapApp()
         app.run()
     except Exception as e:
         st.error(f"Application error: {str(e)}")
