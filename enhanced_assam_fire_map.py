@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 st.set_option("client.showErrorDetails", True)
 
 # Then the rest of your app…
-
+ app = AssamFireMapApp()
 # Set page configuration
 st.set_page_config(
     page_title="Assam Forest Fire Temperature Prediction Map",
@@ -285,7 +285,7 @@ st_folium(
 # Run the application
 if __name__ == "__main__":
     try:
-        app = AssamFireMapApp()
+       
         app.run()
     except Exception as e:
         st.error(f"Application error: {str(e)}")
