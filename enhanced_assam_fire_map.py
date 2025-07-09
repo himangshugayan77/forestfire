@@ -11,6 +11,15 @@ import requests
 import json
 from datetime import datetime, timedelta
 import warnings
+# CORRECT IMPORT - Add this at the top of your file
+from shapely.geometry import Point, Polygon, LineString
+
+# Alternative import for newer Shapely versions
+from shapely import Point
+
+# Keep your existing GeoPandas import
+import geopandas as gpd
+
 warnings.filterwarnings('ignore')
 
 # Set page configuration
@@ -122,57 +131,36 @@ class AssamFireMapApp:
 
         return gdf
 
-    @st.cache_data
-    def generate_temperature_grid(_self, resolution=0.05):
-        """Generate high-resolution temperature grid for Assam"""
-        bounds = _self.assam_bounds
+from shapely.geometry import Point  # ESSENTIAL IMPORT
 
-        lon_range = np.arange(bounds['min_lon'], bounds['max_lon'], resolution)
-        lat_range = np.arange(bounds['min_lat'], bounds['max_lat'], resolution)
+@st.cache_data
+def generate_temperature_grid(self, resolution=0.1):
+    """Generate temperature grid for interpolation"""
+    bounds = self.districts_gdf.total_bounds
+    minx, miny, maxx, maxy = bounds
+    
+    lon_range = np.arange(minx, maxx, resolution)
+    lat_range = np.arange(miny, maxy, resolution)
+    
+    points = []
+    temperatures = []
+    
+    for i in range(len(lat_range)):
+        for j in range(len(lon_range)):
+            # FIXED: Use Point from shapely.geometry
+            points.append(Point(lon_range[j], lat_range[i]))
+            
+            # Generate temperature based on position
+            temp = 25 + np.random.normal(0, 5) + (lat_range[i] - miny) * 0.1
+            temperatures.append(temp)
+    
+    grid_gdf = gpd.GeoDataFrame({
+        'temperature': temperatures,
+        'geometry': points
+    })
+    
+    return grid_gdf
 
-        lon_grid, lat_grid = np.meshgrid(lon_range, lat_range)
-
-        # Generate realistic temperature patterns
-        base_temp = 28
-
-        # Temperature varies with latitude (cooler in north)
-        lat_effect = (lat_grid - bounds['min_lat']) * -0.5
-
-        # Temperature varies with longitude (cooler in east due to elevation)
-        lon_effect = (lon_grid - bounds['min_lon']) * -0.3
-
-        # Add some realistic noise and hotspots
-        np.random.seed(42)
-        noise = np.random.normal(0, 1.5, lon_grid.shape)
-
-        # Create temperature hotspots (simulate urban heat islands)
-        hotspot_mask = ((lon_grid - 91.7) ** 2 + (lat_grid - 26.1) ** 2) < 0.1
-        hotspot_effect = hotspot_mask * 3
-
-        temp_grid = base_temp + lat_effect + lon_effect + noise + hotspot_effect
-
-        # Create GeoDataFrame for grid points
-        points = []
-        temperatures = []
-        fire_probabilities = []
-
-        for i in range(len(lat_range)):
-            for j in range(len(lon_range)):
-                temp = temp_grid[i, j]
-                # Calculate fire probability based on temperature
-                fire_prob = max(0, min(1, (temp - 25) / 15))
-
-                points.append(gpd.Point(lon_range[j], lat_range[i]))
-                temperatures.append(temp)
-                fire_probabilities.append(fire_prob)
-
-        grid_gdf = gpd.GeoDataFrame({
-            'temperature': temperatures,
-            'fire_probability': fire_probabilities,
-            'geometry': points
-        }, crs='EPSG:4326')
-
-        return grid_gdf
 
     def create_interactive_map(self, districts_gdf, grid_gdf, show_grid=True, show_districts=True):
         """Create comprehensive interactive Folium map"""
@@ -458,7 +446,36 @@ class AssamFireMapApp:
         **📚 Data Sources:** Sample data for demonstration. Recommended sources include NASA FIRMS, 
         Indian Meteorological Department, and Forest Survey of India.
         """)
+# Convert geometry for Streamlit display
+if 'geometry' in your_gdf.columns:
+    display_df = your_gdf.copy()
+    display_df['geometry'] = display_df['geometry'].astype(str)
+    st.dataframe(display_df)
+# More efficient for multiple points
+import geopandas as gpd
+from shapely.geometry import Point
 
+# Method 1: Using gpd.points_from_xy (recommended)
+gdf = gpd.GeoDataFrame(
+    geometry=gpd.points_from_xy(longitude_array, latitude_array)
+)
+
+# Method 2: List comprehension for custom data
+points = [Point(lon, lat) for lon, lat in zip(longitude_array, latitude_array)]
+gdf = gpd.GeoDataFrame(geometry=points)
+@st.cache_data
+def load_spatial_data():
+    # Load and process your spatial data
+    return gdf
+
+# Use the cached function
+cached_gdf = load_spatial_data()
+try:
+    from shapely.geometry import Point
+    # Your spatial operations
+except ImportError as e:
+    st.error(f"Spatial libraries not available: {e}")
+    st.stop()
 # Run the application
 if __name__ == "__main__":
     app = AssamFireMapApp()
