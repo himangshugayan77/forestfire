@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 st.set_option("client.showErrorDetails", True)
 
 # Then the rest of your app…
- app = AssamFireMapApp()
+app = AssamFireMapApp()
 # Set page configuration
 st.set_page_config(
     page_title="Assam Forest Fire Temperature Prediction Map",
