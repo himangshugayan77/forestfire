@@ -244,6 +244,35 @@ class AssamFireMapApp:
                 st.dataframe(high_risk_display, use_container_width=True)
             else:
                 st.write("No high-risk districts currently.")
+                # 1️⃣  Cache expensive parts
+@st.cache_data
+def load_assam_districts():
+    ...
+
+@st.cache_data
+def generate_temperature_grid(resolution):
+    ...
+
+# 2️⃣  Keep track of the grid resolution so we only rebuild when it changes
+resolution = st.sidebar.slider("Grid Resolution", 0.05, 0.5, 0.1)
+if "resolution" not in st.session_state or st.session_state.resolution != resolution:
+    st.session_state.resolution = resolution
+    st.session_state.grid = generate_temperature_grid(resolution)
+
+# 3️⃣  Build the map only when necessary
+if "map_obj" not in st.session_state:
+    st.session_state.map_obj = create_interactive_map(
+        districts_gdf, st.session_state.grid,
+        show_grid, show_districts
+    )
+
+# 4️⃣  Display without triggering feedback
+st_folium(
+    st.session_state.map_obj,
+    key="assam_temperature_map",
+    returned_objects=[]
+)
+
 
 # Run the application
 if __name__ == "__main__":
