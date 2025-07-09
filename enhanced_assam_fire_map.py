@@ -261,10 +261,13 @@ if "resolution" not in st.session_state or st.session_state.resolution != resolu
 
 # 3️⃣  Build the map only when necessary
 if "map_obj" not in st.session_state:
-    st.session_state.map_obj = create_interactive_map(
-        districts_gdf, st.session_state.grid,
-        show_grid, show_districts
-    )
+st.session_state.map_obj = app.create_interactive_map(
+    app.districts_gdf,
+    st.session_state.grid,
+    show_grid,
+    show_districts
+)
+
 
 # 4️⃣  Display without triggering feedback
 st_folium(
